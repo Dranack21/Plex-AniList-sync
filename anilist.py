@@ -1,37 +1,36 @@
 import requests
+import os
 import json
+from dotenv import load_dotenv
 
+load_dotenv()
+ACCESS_TOKEN = os.getenv('ANI_TOKEN')
 url =  "https://graphql.anilist.co"
-
-f = open(".env")
-f.readline()
-ACCESS_TOKEN = f.readline()
 
 headers = {
     "Authorization": f"Bearer {ACCESS_TOKEN}",
     "Content-Type": "application/json"
 }
-# query = '''	
-# {
-# 	Viewer
-# 	{
-# 		name
-# 	}
-# }
-# '''
 
 
-mutation SaveMediaListEntry($mediaId: Int, $progress: Int) {
-  SaveMediaListEntry(mediaId: $mediaId, progress: $progress) {
-    
+query = '''
+query Studio($search: String) {
+  Studio(search: $search) {
+    siteUrl
+    name
+    isAnimationStudio
+    id
   }
 }
+'''
 
-variables ={
-	'mediaId': 7791
-	'progress': 24
+variables = {
+    "search": "Kyoto Animation"
 }
 
-response = requests.post(url, json={"mutation": mutation}, headers=headers, 'variables': variables)
+
+
+response = requests.post(url, json={"query":query, "variables": variables}, headers= headers)
 print(response)
 print(response.json())	
+
