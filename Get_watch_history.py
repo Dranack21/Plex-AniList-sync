@@ -14,16 +14,20 @@ def Get_key():
 		return (response.json())
 	print("Could not access to user history")
 
+
+##here this works cause dico is a json
 def Search_for_title(dico):
 	Title_list = []
 	if (dico):
 		if (dico["response"]["result"] != "success"): 
 			return 0;
 		for item in dico["response"]["data"]["data"]:
-			if (item["percent_complete"] > 70):
-				Title_list.append([item["full_title"], item["percent_complete"]])
-		# for i in range (len(Title_list)):
-		# 	# print(Title_list[i][0], Title_list[i][1])
+			if (item["percent_complete"] > 70 and item["grandparent_title"]):
+				Title_list.append([item["grandparent_title"], item["media_index"], item["percent_complete"]]) ##MAYBE ASK FOR YEAR
+		print("\033[94m	PRINTING ANIME LIST FROM TAUTULLI		\033[0m")
+		print('\n')
+		for i in range (len(Title_list)):
+			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][2])
 		return (Title_list)
 	
 
