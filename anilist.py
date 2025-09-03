@@ -6,7 +6,7 @@
 #    By: habouda <habouda@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/31 15:33:51 by habouda           #+#    #+#              #
-#    Updated: 2025/08/31 20:09:44 by habouda          ###   ########.fr        #
+#    Updated: 2025/09/03 16:07:05 by habouda          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,7 +54,7 @@ for i in range (len(Title_list)):
   if (response.status_code == 200):
     dico = response.json()
     anime_id = dico["data"]["Media"]["id"]
-    progress_id.append([[anime_id], [Title_list[i][1]]])
+    progress_id.append([anime_id, Title_list[i][1]])
     print(response.json())
 
 
@@ -64,14 +64,16 @@ print(progress_id)
 
 
 def get_highest_progress(progress_id):
-  id_dictionnary = {};
-  for item in range(len(progress_id)):
-      if (id_dictionnary[progress_id[i][0]] == None):
-          id_dictionnary[progress_id[i][0]] = progress_id[i][1]
-      else:
-          if (id_dictionnary[progress_id[i][0]] < progress_id[i][1]):
-              id_dictionnary[progress_id[i][0]] = progress_id[i][1];
-  print(id_dictionnary);
 
-get_highest_progress(progress_id)
+  id_dictionnary = {};  
+  for i in range(len(progress_id)):
+    try:
+      if (id_dictionnary[progress_id[i][0]] and progress_id[i][1] > id_dictionnary[progress_id[i][0]]):
+        id_dictionnary[progress_id[i][0]] = progress_id[i][1]
+    except KeyError:
+      id_dictionnary[progress_id[i][0]] = progress_id[i][1]
+  return(id_dictionnary)
 
+id = {};
+id = get_highest_progress(progress_id);
+print(id);
