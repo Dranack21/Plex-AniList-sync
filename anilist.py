@@ -2,9 +2,10 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-from Get_watch_history  import Get_key_and_user_history
-from Get_watch_history  import Search_for_title
-from one_piece_kai      import kai_to_anime
+from Get_watch_history  import  Get_key_and_user_history
+from Get_watch_history  import  Search_for_title
+from one_piece_kai      import  kai_to_anime
+from helpers            import  check_for_status
 
 ###env handling using load_dotenv from uv
 load_dotenv()
@@ -75,7 +76,14 @@ def get_highest_progress(progress_id):
       id_dictionnary[progress_id[i][0]] = progress_id[i][1]
   return(id_dictionnary)
 
+
+# This function is called in a for loop each time with an anime_id and a progress it will make an HTTP request to ANILIST to update progress
+# Args: Two ints anime_id which is the id for ani list to recognize the anime and progress the number of episodes watched
+# Notes: One piece kai is not present on my AniList so it's hard coded since it made things I didnt watch set as watched
+# Return: Nothing
+
 def update_anime_progress(anime_id, progress):
+  ###Handle one piece kai case
   if (anime_id == 465):
     anime_id = 21
     progress = kai_to_anime(progress)
@@ -83,21 +91,45 @@ def update_anime_progress(anime_id, progress):
     "mediaId": anime_id,
     "progress": progress
   }
+  check_for_status(anime_id, progress)
   response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
-  print()
-  print(anime_id, response.status_code)
+  if (response.status_code == 200):
+    print("\033[92mAnime with ID", anime_id, "progress updated to", progress, "\033[0m")
+  else:
+    print("\033[91mError updating anime", anime_id, "\033[0m")
 
+
+  
 def main():
   print("\033[94mGetting user History using Rest and Tautulli API\033[0m")  # Blue
-  dico = Get_key_and_user_history()
+  try:
+    dico = Get_key_and_user_history()
+  except requests.exceptions.RequestException as e:
+    print(f"Request failed: {e}")
+    return (1)
+  
   print("\033[92mFetching anime name + progress watched from precedent tautulli api request\033[0m")  # Green
-  Title_list = Search_for_title(dico)
+  try:
+    Title_list = Search_for_title(dico)
+  except requests.exceptions.RequestException as e:
+    print(f"Request failed: {e}")
+    return (1)    
+  
   print("\033[93mGetting anime_id using graphQL query request on anilist api\033[0m")  # Orange/Yellow
-  progress_id = Request_id_and_progress(Title_list)
+  try:
+    progress_id = Request_id_and_progress(Title_list)
+  except requests.exceptions.RequestException as e:
+      print(f"Request failed: {e}")
+      return (1)
+
   print("\033[91mMaking a dictionnary with only the highest episode watched\033[0m")  # Red
-  id = get_highest_progress(progress_id);
-  print(id);
+  try:
+    id = get_highest_progress(progress_id);
+  except requests.exceptions.RequestException as e:
+    print(f"Request failed: {e}")
+    return (1)
+  print(id)
   for anime_id, progress, in id.items():
-    update_anime_progress(anime_id, progress)
+    update_anime_progress(anime_id, progress);
 if __name__ == "__main__":
     main()

@@ -29,5 +29,5 @@ def Search_for_title(dico):
 		for i in range (len(Title_list)):
 			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][2])
 		return (Title_list)
-	
+
 
