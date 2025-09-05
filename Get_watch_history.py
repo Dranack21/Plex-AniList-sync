@@ -8,6 +8,7 @@ load_dotenv()
 
 def Get_key_and_user_history():
 	key = os.getenv('PLEX_KEY')
+	print(key)
 	response = requests.get(key + "get_history", params={"user": "hugoa141"})
 	if (response.status_code == 200):
 		return (response.json())

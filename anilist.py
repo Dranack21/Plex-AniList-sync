@@ -1,21 +1,10 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    anilist.py                                         :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: habouda <habouda@student.42.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/08/31 15:33:51 by habouda           #+#    #+#              #
-#    Updated: 2025/09/03 18:05:47 by habouda          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 import requests
 import os
 import json
 from dotenv import load_dotenv
-from Get_watch_history import Get_key_and_user_history
-from Get_watch_history import Search_for_title
+from Get_watch_history  import Get_key_and_user_history
+from Get_watch_history  import Search_for_title
+from one_piece_kai      import kai_to_anime
 
 ###env handling using load_dotenv from uv
 load_dotenv()
@@ -87,11 +76,15 @@ def get_highest_progress(progress_id):
   return(id_dictionnary)
 
 def update_anime_progress(anime_id, progress):
+  if (anime_id == 465):
+    anime_id = 21
+    progress = kai_to_anime(progress)
   variables = {
     "mediaId": anime_id,
     "progress": progress
   }
   response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
+  print()
   print(anime_id, response.status_code)
 
 def main():
