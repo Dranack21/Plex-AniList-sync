@@ -14,14 +14,15 @@ headers = {
     "Content-Type": "application/json"
 }
 query = '''
-query MediaList($mediaId: Int) {
-  MediaList(mediaId: $mediaId) {
-    progress
+query MediaList($mediaId: Int, $userId: Int) {
+  MediaList(mediaId: $mediaId, userId: $userId) {
     repeat
     status
+    progress
     media {
       episodes
     }
+    userId
   }
 }'''
 
@@ -33,22 +34,35 @@ mutation Mutation($mediaId: Int, $repeat: Int, $status: MediaListStatus) {
 }
 '''
 
+# This function checks
+# Args: Two ints anime_id which is the id for ani list to recognize the anime and progress the number of episodes watched
+# Notes: One piece kai is not present on my AniList so it's hard coded since it made things I didnt watch set as watched
+# Return: Nothing
+
 def	check_for_status(anime_id, progress):
   print(anime_id, progress)
   variables = {
-  "mediaId": anime_id
+    "mediaId": anime_id,
+    "userId": "7021144"
   }
   response = requests.post(url, json={"query": query, "variables": variables}, headers=headers)
   json_dico = response.json()
   print(json_dico)
-  if (json_dico["data"]["MediaList"]["status"] == "COMPLETED" or json_dico["data"]["MediaList"]["status"] == "REPEATING"):
-    if (json_dico["data"]["MediaList"]["progress"] == json_dico["data"]["MediaList"]["media"]["episodes"]):
+  if (json_dico["data"]["MediaList"]["status"] == "COMPLETED"):
+    if (json_dico["data"]["MediaList"]["progress"] != json_dico["data"]["MediaList"]["media"]["episodes"]):
       variables = {
         "mediaId": anime_id,
         "repeat": json_dico["data"]["MediaList"]["repeat"] + 1,
         "status": "REPEATING"
-      }
+        }
       response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
     return(1);
-  return(0);
+  elif (json_dico["data"]["MediaList"]["status"] == "REPEATING"):
+    if (json_dico["data"]["MediaList"]["progress"] == json_dico["data"]["MediaList"]["media"]["episodes"]):
+      variables = {
+        "mediaId": anime_id,
+        "status": "COMPLETED"
+        }
+      response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
+  return(0)
 

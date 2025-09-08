@@ -24,10 +24,10 @@ def Search_for_title(dico):
 		for item in dico["response"]["data"]["data"]:
 			if (item["percent_complete"] > 70 and item["grandparent_title"]):
 				Title_list.append([item["grandparent_title"], item["media_index"], item["percent_complete"]])
-		print("\033[94m	PRINTING ANIME LIST FROM TAUTULLI	\033[0m")
-		print('\n')
+		print("\033[94mPRINTING ANIME LIST FROM TAUTULLI\033[0m")
 		for i in range (len(Title_list)):
 			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][2])
 		return (Title_list)
+
 
 

@@ -43,27 +43,28 @@ mutation SaveMediaListEntry($mediaId: Int, $progress: Int)
 # Notes: Uses GraphQL to make HTTP request to ani list API
 # Return: The list of list containing pairs of anime_id + progress  
 
-def Request_id_and_progress(Title_list):
+def Request_id(name_progress_dict):
   progress_id = []
-  for i in range(len(Title_list)):
+  allkeys = list(name_progress_dict.keys())
+  for i in range(len(allkeys)):
     variables = {
-        "search": Title_list[i][0], ##anime name
+        "search": allkeys[i], ##anime name
         "type": "ANIME"
     }
     response = requests.post(url, json={"query":query, "variables": variables}, headers= headers)
     if (response.status_code == 200):
       dico = response.json()
       anime_id = dico["data"]["Media"]["id"] ##we only requested anime id graphql
-      progress_id.append([anime_id, Title_list[i][1]]) #list of anime id + episode watched
+      progress_id.append([anime_id, name_progress_dict[allkeys[i]]]) #list of anime id + episode watched
       print(response.json())
   return (progress_id)
 
 
 
 # Parses a list of list that contains pairs of anime_id + progress and makes a dictionnary with the highest episode watched of each anime_id 
-# Args: A list of list that contains an anime_id + an anime episode watched ([4501, 45],[1701, 17])
+# Args: A list of list that contains an anime_id + an anime episode watched ([4501, 45],[1701, 17], [4501, 46])
 # Notes: When accessing a dictionnary key that doesnt exist python throws an KeyError exepction
-# Return: A dictionnary with key being an anime id and value highest episode watched
+# Return: A dictionnary with key being an anime id and value highest episode watched [1701, 17], [4501, 46]
 
 def get_highest_progress(progress_id):
 
@@ -113,23 +114,17 @@ def main():
     Title_list = Search_for_title(dico)
   except requests.exceptions.RequestException as e:
     print(f"Request failed: {e}")
-    return (1)    
-  
+    return (1) 
+  Highest_progress_dic = get_highest_progress(Title_list);
+  print(id)
   print("\033[93mGetting anime_id using graphQL query request on anilist api\033[0m")  # Orange/Yellow
   try:
-    progress_id = Request_id_and_progress(Title_list)
+    progress_and_id = Request_id(Highest_progress_dic)
   except requests.exceptions.RequestException as e:
       print(f"Request failed: {e}")
       return (1)
+  for i in range(len(progress_and_id)):
+    update_anime_progress(progress_and_id[i][0], progress_and_id[i][1])
 
-  print("\033[91mMaking a dictionnary with only the highest episode watched\033[0m")  # Red
-  try:
-    id = get_highest_progress(progress_id);
-  except requests.exceptions.RequestException as e:
-    print(f"Request failed: {e}")
-    return (1)
-  print(id)
-  for anime_id, progress, in id.items():
-    update_anime_progress(anime_id, progress);
 if __name__ == "__main__":
     main()
