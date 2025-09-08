@@ -34,7 +34,7 @@ mutation Mutation($mediaId: Int, $repeat: Int, $status: MediaListStatus) {
 }
 '''
 
-# This function checks
+# This function looks if an anime that appeared in the watch history is COMPLETED or REPEATING and updates to the other one if needed
 # Args: Two ints anime_id which is the id for ani list to recognize the anime and progress the number of episodes watched
 # Notes: One piece kai is not present on my AniList so it's hard coded since it made things I didnt watch set as watched
 # Return: Nothing
@@ -56,6 +56,7 @@ def	check_for_status(anime_id, progress):
         "status": "REPEATING"
         }
       response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
+      return (0);
     return(1);
   elif (json_dico["data"]["MediaList"]["status"] == "REPEATING"):
     if (json_dico["data"]["MediaList"]["progress"] == json_dico["data"]["MediaList"]["media"]["episodes"]):

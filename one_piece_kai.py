@@ -17,6 +17,6 @@ kai_episodes = {
     120: 982, 121: 992, 122: 1000, 123: 1015, 124: 1028, 125: 1039, 126: 1047,
     127: 1053, 128: 1062, 129: 1070, 130: 1078, 131: 1085
 }
-
+# Dictionnary that pairs kai episodes with their highest respective anime episode and returns it this way we can use one piece kai as a valid entry for anime list by converting it to regular One piece
 def kai_to_anime(episode: int):
 	return(kai_episodes[episode]);
