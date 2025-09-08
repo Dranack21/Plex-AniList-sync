@@ -12,22 +12,23 @@ load_dotenv()
 # Return: The json with user watch history from tautulli
 
 def Get_key_and_user_history():
-	key = os.getenv('PLEX_KEY')
-	response = requests.get(key + "get_history", params={"user": "hugoa141"})
-	if (response.status_code == 200):
-		return (response.json())
-	print("Could not access to user history")
+    key = os.getenv('PLEX_KEY')
+    response = requests.get(key + "get_history", params={"user": "hugoa141"})
+    print(response.status_code)
+    if response.status_code == 200:
+        return response.json()
+    raise Exception(f"Could not access user history. Status code: {response.status_code}")
 
 
-# This function looks if an anime that appeared in the watch history is COMPLETED or REPEATING and updates to the other one if needed
-# Args: Two ints anime_id which is the id for ani list to recognize the anime and progress the number of episodes watched
-# Notes: One piece kai is not present on my AniList so it's hard coded since it made things I didnt watch set as watched
-# Return: Nothing
+# This function takes a json as a parameter and fetches anime name + progress_id
+# Args: a json that is rest api result from tautulli request
+# Notes: we only count something as finished if I watched 70percent or more
+# Return: A list of list containung title + progress_index + percent complete
 def Search_for_title(dico):
 	Title_list = []
 	if (dico):
 		if (dico["response"]["result"] != "success"): 
-			return 0;
+			raise (f"Json file obtained from Tautulli is not correct")
 		for item in dico["response"]["data"]["data"]:
 			if (item["percent_complete"] > 70 and item["grandparent_title"]):
 				Title_list.append([item["grandparent_title"], item["media_index"], item["percent_complete"]])

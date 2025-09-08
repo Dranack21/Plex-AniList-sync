@@ -1,6 +1,7 @@
 import requests
 import os
 import json
+import sys
 from dotenv import load_dotenv
 from Get_watch_history  import  Get_key_and_user_history
 from Get_watch_history  import  Search_for_title
@@ -106,14 +107,13 @@ def main():
   try:
     dico = Get_key_and_user_history()
   except requests.exceptions.RequestException as e:
-    print(f"Request failed: {e}")
-    return (1)
-  
+    print(f"Encountered an error when trying to access User Plex watch history: {e}")
+    sys.exit(1)
   print("\033[92mFetching anime name + progress watched from precedent tautulli api request\033[0m")  # Green
   try:
     Title_list = Search_for_title(dico)
   except requests.exceptions.RequestException as e:
-    print(f"Request failed: {e}")
+    print(f"Encoutered error: {e}")
     return (1) 
   Highest_progress_dic = get_highest_progress(Title_list);
   print(id)
