@@ -1,7 +1,7 @@
 import requests 
 import os
 import json
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 
 
 load_dotenv()
@@ -26,13 +26,19 @@ def Get_key_and_user_history():
 # Return: A list of list containung title + progress_index + percent complete
 def Search_for_title(dico):
 	Title_list = []
+	last_synch = os.getenv('LAST_SYNCH')
+	last_synch = int(last_synch);
 	if (dico):
 		if (dico["response"]["result"] != "success"): 
 			raise (f"Json file obtained from Tautulli is not correct")
 		for item in dico["response"]["data"]["data"]:
-			if (item["percent_complete"] > 70 and item["grandparent_title"]):
-				Title_list.append([item["grandparent_title"], item["media_index"], item["percent_complete"]])
+			if (item["percent_complete"] > 70 and item["stopped"] > last_synch and item["grandparent_title"]):
+				Title_list.append([item["grandparent_title"], item["media_index"], item["stopped"]])
 		print("\033[94mPRINTING ANIME LIST FROM TAUTULLI\033[0m")
+		if (Title_list):
+			set_key('.env', 'LAST_SYNCH', str(Title_list[0][2]))
+		else:
+			raise(f"No anime watch history to update")
 		for i in range (len(Title_list)):
 			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][2])
 		return (Title_list)
