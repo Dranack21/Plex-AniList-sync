@@ -49,15 +49,13 @@ def	check_for_status(anime_id, progress):
   json_dico = response.json()
   print(json_dico)
   if (json_dico["data"]["MediaList"]["status"] == "COMPLETED"):
-    if (json_dico["data"]["MediaList"]["progress"] != json_dico["data"]["MediaList"]["media"]["episodes"]):
-      variables = {
-        "mediaId": anime_id,
-        "repeat": json_dico["data"]["MediaList"]["repeat"] + 1,
-        "status": "REPEATING"
-        }
-      response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
-      return (0);
-    return(1);
+    variables = {
+      "mediaId": anime_id,
+      "repeat": json_dico["data"]["MediaList"]["repeat"] + 1,
+      "status": "REPEATING"
+      }
+    response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
+    return (0);
   elif (json_dico["data"]["MediaList"]["status"] == "REPEATING"):
     if (json_dico["data"]["MediaList"]["progress"] == json_dico["data"]["MediaList"]["media"]["episodes"]):
       variables = {
