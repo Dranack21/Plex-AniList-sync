@@ -12,12 +12,24 @@ load_dotenv()
 # Return: The json with user watch history from tautulli
 
 def Get_key_and_user_history():
-    key = os.getenv('PLEX_KEY')
-    response = requests.get(key + "get_history", params={"user": "hugoa141"})
-    print(response.status_code)
-    if response.status_code == 200:
-        return response.json()
-    raise Exception(f"Could not access user history. Status code: {response.status_code}")
+	key = os.getenv('PLEX_KEY')
+	if not key:
+		raise Exception("PLEX_KEY environment variable not found")
+	try:
+		response = requests.get(key + "get_history", params={"user": "hugoa141"}, timeout=10)
+		response.raise_for_status()  # Raise exception for 4XX/5XX responses
+		print(f"Request successful: {response.status_code}")
+		return response.json()
+	except requests.exceptions.Timeout:
+		raise Exception("Request to Tautulli timed out. Service might be down.")
+	except requests.exceptions.ConnectionError:
+		raise Exception("Failed to connect to Tautulli. Service might be down.")
+	except requests.exceptions.HTTPError as e:
+		raise Exception(f"HTTP error occurred: {e}")
+	except json.JSONDecodeError:
+		raise Exception("Could not parse response from Tautulli")
+	except Exception as e:
+		raise Exception(f"Unexpected error accessing user history: {str(e)}")
 
 
 # This function takes a json as a parameter and fetches anime name + progress_id
