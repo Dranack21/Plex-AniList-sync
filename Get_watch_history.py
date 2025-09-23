@@ -3,7 +3,6 @@ import os
 import json
 from dotenv import load_dotenv, set_key
 
-
 load_dotenv()
 
 # This function gets plex key from hidden venv and returns the user history as a json 
@@ -17,7 +16,7 @@ def Get_key_and_user_history():
 		raise Exception("PLEX_KEY environment variable not found")
 	try:
 		response = requests.get(key + "get_history", params={"user": "hugoa141"}, timeout=10)
-		response.raise_for_status()  # Raise exception for 4XX/5XX responses
+		response.raise_for_status()
 		print(f"Request successful: {response.status_code}")
 		return response.json()
 	except requests.exceptions.Timeout:
@@ -40,20 +39,44 @@ def Search_for_title(dico):
 	Title_list = []
 	last_synch = os.getenv('LAST_SYNCH')
 	last_synch = int(last_synch);
+	key = os.getenv('PLEX_KEY')
 	if (dico):
 		if (dico["response"]["result"] != "success"): 
 			raise (f"Json file obtained from Tautulli is not correct")
 		for item in dico["response"]["data"]["data"]:
 			if (item["percent_complete"] > 70 and item["stopped"] > last_synch and item["grandparent_title"]):
-				Title_list.append([item["grandparent_title"], item["media_index"], item["stopped"]])
+				season_air_time = Find_air_time(item, item["parent_rating_key"], item["media_index"])
+				season_response = requests.get(key + "get_metadata", params={"rating_key": item["parent_rating_key"]}, timeout=10)
+				season_data = season_response.json()
+				max_episodes = season_data["response"]["data"]["children_count"]
+				Title_list.append([item["grandparent_title"], item["media_index"], item["stopped"], season_air_time, max_episodes])
 		print("\033[94mPRINTING ANIME LIST FROM TAUTULLI\033[0m")
 		if (Title_list):
 			set_key('.env', 'LAST_SYNCH', str(Title_list[0][2]))
 		else:
 			raise(f"No anime watch history to update")
 		for i in range (len(Title_list)):
-			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][2])
+			print(Title_list[i][0], Title_list[i][1], '|', Title_list[i][3], '| Max episodes:', Title_list[i][4])
 		return (Title_list)
 
-
-
+def Find_air_time(item, parent_rating_key, media_index, filename=".airtimes.json"):
+    if media_index == 1:
+        string = item["originally_available_at"]
+        string = string.replace('-', '')
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = {}
+        data[str(parent_rating_key)] = string
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=2)
+        return int(string)
+    else:
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+        air_time = data.get(str(parent_rating_key))
+        return int(air_time) if air_time else None

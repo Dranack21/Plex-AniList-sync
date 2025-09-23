@@ -48,6 +48,9 @@ def	check_for_status(anime_id, progress):
   response = requests.post(url, json={"query": query, "variables": variables}, headers=headers)
   json_dico = response.json()
   print(json_dico)
+  media_list = json_dico["data"]["MediaList"]
+  if media_list is None:
+    return
   if (json_dico["data"]["MediaList"]["status"] == "COMPLETED"):
     variables = {
       "mediaId": anime_id,
